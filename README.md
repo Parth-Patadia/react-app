@@ -8,13 +8,13 @@ A modern React application for user account management with authentication and p
   - Register new account
   - Login with existing credentials
   - Secure password handling
-  - Automatic logout
 
 - **Profile Management**
   - View profile information
   - Edit profile details
   - Change password functionality
   - Real-time validation
+  - Raal-time notification
 
 - **User Interface**
   - Clean and responsive design
@@ -50,6 +50,7 @@ A modern React application for user account management with authentication and p
 - `public/`: Contains index.html and some Static assets
 - `src/`: Contains all the source code of the application
   - `components/`: Contains all the components of the application
+  - `utils/`: Contains passwordValidation file
   - `styles.css`: Contains all the custom styles of the application
   - `App.js`: Contains the main App component
   - `index.js`: Entry point of the application
