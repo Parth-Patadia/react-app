@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { validatePassword } from '../utils/passwordValidation';
 import './styles.css';
 
 function Register() {
@@ -8,8 +9,12 @@ function Register() {
     email: '',
     password: '',
     confirmPassword: '',
-  });
+  }); // Initialize formData with empty values
   const [errors, setErrors] = useState({});
+  const [passwordStrength, setPasswordStrength] = useState({
+    errors: [],
+    isValid: false
+  });
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -18,9 +23,16 @@ function Register() {
       ...prevState,
       [name]: value
     }));
+
+    // Check password strength when password field changes
+    if (name === 'password') {
+      setPasswordStrength(validatePassword(value));
+    }
+
+    // Clear errors when user types
     if (errors[name]) {
-      setErrors(prevErrors => ({
-        ...prevErrors,
+      setErrors(prev => ({
+        ...prev,
         [name]: ''
       }));
     }
@@ -36,11 +48,13 @@ function Register() {
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       tempErrors.email = 'Email is invalid';
     }
-    if (!formData.password) {
-      tempErrors.password = 'Password is required';
-    } else if (formData.password.length < 6) {
-      tempErrors.password = 'Password must be at least 6 characters';
+
+    // Password validation
+    const passwordValidation = validatePassword(formData.password);
+    if (!passwordValidation.isValid) {
+      tempErrors.password = passwordValidation.errors[0];
     }
+
     if (formData.password !== formData.confirmPassword) {
       tempErrors.confirmPassword = 'Passwords do not match';
     }
@@ -106,11 +120,26 @@ function Register() {
                 <label>Password:</label>
                 <input
                   type="password"
-                  className={`form-control ${errors.password ? 'is-invalid' : ''}`}
+                  className={`form-control ${errors.password || passwordStrength.errors.length > 0 ? 'is-invalid' : ''}`}
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
+                  required
                 />
+                {formData.password && (
+                  <div className="password-strength mt-2">
+                    {passwordStrength.errors.map((error, index) => (
+                      <div key={index} className="text-danger small">
+                        <i className="fas fa-times-circle"></i> {error}
+                      </div>
+                    ))}
+                    {passwordStrength.isValid && (
+                      <div className="text-success small">
+                        <i className="fas fa-check-circle"></i> Password is strong
+                      </div>
+                    )}
+                  </div>
+                )}
                 {errors.password && <div className="invalid-feedback">{errors.password}</div>}
               </div>
 

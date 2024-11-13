@@ -119,6 +119,7 @@
 /* Add fade animation for alerts */
 .alert {
   transition: opacity 0.5s ease-in-out;
+  animation: slideIn 0.5s ease-out;
 }
 
 .alert.fade {
@@ -127,11 +128,6 @@
 
 .alert.fade.hide {
   opacity: 0;
-}
-
-/* Optional: Add sliding animation */
-.alert {
-  animation: slideIn 0.5s ease-out;
 }
 
 @keyframes slideIn {
@@ -143,4 +139,21 @@
     transform: translateY(0);
     opacity: 1;
   }
+}
+
+.password-strength {
+  font-size: 0.8rem;
+  margin-top: 5px;
+}
+
+.password-strength i {
+  margin-right: 5px;
+}
+
+.password-strength .text-danger {
+  color: #dc3545;
+}
+
+.password-strength .text-success {
+  color: #28a745;
 } 

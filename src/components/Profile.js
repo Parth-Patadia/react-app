@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './styles.css';
+import { validatePassword } from '../utils/passwordValidation';
 
 function Profile() {
-  const [user, setUser] = useState(null);
-  const [isEditing, setIsEditing] = useState(false);
-  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [user, setUser] = useState(null); //manages user data
+  const [isEditing, setIsEditing] = useState(false); 
+  const [isChangingPassword, setIsChangingPassword] = useState(false); 
   const [formData, setFormData] = useState({
     name: '',
     email: ''
@@ -17,12 +18,16 @@ function Profile() {
   });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [passwordStrength, setPasswordStrength] = useState({
+    errors: [],
+    isValid: false
+  });
   const navigate = useNavigate();
 
   useEffect(() => {
     const userData = localStorage.getItem('currentUser');
     if (!userData) {
-      navigate('/');
+      navigate('/'); 
     } else {
       const parsedUser = JSON.parse(userData);
       setUser(parsedUser);
@@ -50,6 +55,7 @@ function Profile() {
       ...prevState,
       [name]: value
     }));
+    setError('');
   };
 
   const handlePasswordChange = (e) => {
@@ -58,6 +64,11 @@ function Profile() {
       ...prevState,
       [name]: value
     }));
+
+    if (name === 'newPassword') {
+      setPasswordStrength(validatePassword(value));
+    }
+
     setError('');
     setSuccess('');
   };
@@ -65,34 +76,40 @@ function Profile() {
   const handleSubmit = (e) => {
     e.preventDefault();
     
-    // Update in registeredUsers array
-    const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
-    const updatedUsers = registeredUsers.map(u => {
-      if (u.email === user.email) {
-        return { ...u, name: formData.name, email: formData.email };
-      }
-      return u;
-    });
-    
-    // Update stored data
-    localStorage.setItem('registeredUsers', JSON.stringify(updatedUsers));
-    localStorage.setItem('currentUser', JSON.stringify(formData));
-    
-    setUser(formData);
-    setIsEditing(false);
+    try {
+      // Update in registeredUsers array
+      const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+      const updatedUsers = registeredUsers.map(u => {
+        if (u.email === user.email) {
+          return { ...u, name: formData.name, email: formData.email };
+        }
+        return u;
+      });
+      
+      // Update stored data
+      localStorage.setItem('registeredUsers', JSON.stringify(updatedUsers));
+      localStorage.setItem('currentUser', JSON.stringify(formData));
+      
+      setUser(formData);
+      setIsEditing(false);
+      setSuccess('Profile updated successfully!');
+    } catch (err) {
+      setError('Failed to update profile. Please try again.');
+    }
   };
 
   const handlePasswordSubmit = (e) => {
     e.preventDefault();
     
-    // Validate passwords
-    if (passwordData.newPassword !== passwordData.confirmNewPassword) {
-      setError('New passwords do not match');
+    // Validate new password
+    const passwordValidation = validatePassword(passwordData.newPassword);
+    if (!passwordValidation.isValid) {
+      setError(passwordValidation.errors[0]);
       return;
     }
 
-    if (passwordData.newPassword.length < 6) {
-      setError('New password must be at least 6 characters long');
+    if (passwordData.newPassword !== passwordData.confirmNewPassword) {
+      setError('New passwords do not match');
       return;
     }
 
@@ -141,13 +158,13 @@ function Profile() {
             <h2 className="text-center mb-4">Profile</h2>
             
             {success && (
-              <div className="alert alert-success mb-3 fade show" role="alert">
+              <div className="alert alert-success fade show" role="alert">
                 {success}
               </div>
             )}
 
             {error && (
-              <div className="alert alert-danger mb-3" role="alert">
+              <div className="alert alert-danger" role="alert">
                 {error}
               </div>
             )}
@@ -177,9 +194,6 @@ function Profile() {
                   />
                 </div>
                 <div className="d-flex gap-2">
-                  <button type="submit" className="btn btn-primary flex-grow-1">
-                    Save Changes
-                  </button>
                   <button
                     type="button"
                     className="btn btn-secondary flex-grow-1"
@@ -187,6 +201,10 @@ function Profile() {
                   >
                     Cancel
                   </button>
+                  <button type="submit" className="btn btn-primary flex-grow-1">
+                    Save Changes
+                  </button>
+                  
                 </div>
               </form>
             ) : isChangingPassword ? (
@@ -206,12 +224,26 @@ function Profile() {
                   <label>New Password:</label>
                   <input
                     type="password"
-                    className="form-control"
+                    className={`form-control ${error && 'is-invalid'}`}
                     name="newPassword"
                     value={passwordData.newPassword}
                     onChange={handlePasswordChange}
                     required
                   />
+                  {passwordData.newPassword && (
+                    <div className="password-strength mt-2">
+                      {passwordStrength.errors.map((error, index) => (
+                        <div key={index} className="text-danger small">
+                          <i className="fas fa-times-circle"></i> {error}
+                        </div>
+                      ))}
+                      {passwordStrength.isValid && (
+                        <div className="text-success small">
+                          <i className="fas fa-check-circle"></i> Password is strong
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
                 <div className="form-group mb-3">
                   <label>Confirm New Password:</label>
@@ -225,9 +257,6 @@ function Profile() {
                   />
                 </div>
                 <div className="d-flex gap-2">
-                  <button type="submit" className="btn btn-primary flex-grow-1">
-                    Update Password
-                  </button>
                   <button
                     type="button"
                     className="btn btn-secondary flex-grow-1"
@@ -238,6 +267,10 @@ function Profile() {
                   >
                     Cancel
                   </button>
+                  <button type="submit" className="btn btn-primary flex-grow-1">
+                    Update Password
+                  </button>
+                  
                 </div>
               </form>
             ) : (

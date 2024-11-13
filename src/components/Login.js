@@ -3,11 +3,11 @@ import { useNavigate, Link } from 'react-router-dom';
 import './styles.css';
 
 function Login() {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState({ // Initialize formData with empty values
     email: '',
     password: ''
   });
-  const [error, setError] = useState('');
+  const [error, setError] = useState(''); // Used useState hook to manage error messages
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -23,11 +23,11 @@ function Login() {
   const handleSubmit = (e) => {
     e.preventDefault();
     
-    // Get stored user data
+    // stored user data
     const storedUserData = localStorage.getItem('registeredUsers');
     const users = storedUserData ? JSON.parse(storedUserData) : [];
     
-    // Find user by email
+    // Find user by their mail id from local storage
     const user = users.find(u => u.email === formData.email);
     
     if (!user) {
