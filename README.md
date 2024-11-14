@@ -14,7 +14,7 @@ A modern React application for user account management with authentication and p
   - Edit profile details
   - Change password functionality
   - Real-time validation
-  - Raal-time notification
+  - Real-time pop up notification
 
 - **User Interface**
   - Clean and responsive design
